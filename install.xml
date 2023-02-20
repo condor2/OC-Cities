@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+   <name>Select City v3.x</name>
+   <code>select_city_3x</code>
+   <version>3.0</version>
+   <link>https://www.free-time-info.ro/en/</link>
+   <author>xxvirusxx</author>
+
+	<file path="admin/controller/common/column_left.php">
+		<operation info="Display Cities in Column Left">
+			<search><![CDATA[if ($this->user->hasPermission('access', 'localisation/geo_zone')) {]]></search>
+			<add position="before"><![CDATA[
+			if ($this->user->hasPermission('access', 'localisation/city')) {
+				$localisation[] = array(
+					'name'	   => $this->language->get('text_city'),
+					'href'     => $this->url->link('localisation/city', 'user_token=' . $this->session->data['user_token'], true),
+					'children' => array()		
+				);
+			}
+			]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/controller/account/account.php">
+		<operation>
+			<search><![CDATA[$this->response->setOutput(json_encode($json));]]></search>
+			<add position="after" offset="1"><![CDATA[
+	public function zone() {
+		$json = array();
+
+		$this->load->model('localisation/zone');
+
+		$zone_info = $this->model_localisation_zone->getZone($this->request->get['zone_id']);
+
+		if ($zone_info) {
+			$this->load->model('localisation/city');
+
+			$json = array(
+				'zone_id'   => $zone_info['zone_id'],
+				'name'      => $zone_info['name'],
+				'city'      => $this->model_localisation_city->getCitiesByZoneId($this->request->get['zone_id']),
+				'status'    => $zone_info['status']
+			);
+		}
+
+		$this->response->addHeader('Content-Type: application/json');
+		$this->response->setOutput(json_encode($json));
+	}
+			]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/controller/account/address.php">
+		<operation>
+			<search><![CDATA[if (isset($this->request->post['city'])) {]]></search>
+			<add position="before"><![CDATA[
+		$this->load->model('localisation/city');
+
+		$data['cities'] = $this->model_localisation_city->getCities();
+			]]></add>
+		</operation>
+	</file>
+
+
+	<file path="catalog/view/theme/default/template/account/address_form.twig">
+		<operation>
+			<search><![CDATA[<input type="text" name="address_2" value="{{ address_2 }}" placeholder="{{ entry_address_2 }}" id="input-address-2" class="form-control" />]]></search>
+			<add position="replace" offset="10"><![CDATA[
+              <input type="text" name="address_2" value="{{ address_2 }}" placeholder="{{ entry_address_2 }}" id="input-address-2" class="form-control" />
+            </div>
+          </div>
+			]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[ {% for custom_field in custom_fields %}]]></search>
+			<add position="before"><![CDATA[
+          <div class="form-group required">
+            <label class="col-sm-2 control-label" for="input-city">{{ entry_city }}</label>
+            <div class="col-sm-10">
+              <select name="city" id="input-city" class="form-control">
+              </select>
+              {% if error_city %}
+              <div class="text-danger">{{ error_city }}</div>
+              {% endif %}
+            </div>
+          </div>
+			]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$('select[name=\'zone_id\']').html(html);]]></search>
+			<add position="after"><![CDATA[
+            $('select[name=\'zone_id\']').trigger('change');
+			]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[{{ footer }}]]></search>
+			<add position="before"><![CDATA[
+<script type="text/javascript"><!--
+$('select[name=\'zone_id\']').on('change', function() {
+    if (this.value == '') return;
+    $.ajax({
+        url: 'index.php?route=account/account/zone&zone_id=' + this.value,
+        dataType: 'json',
+        beforeSend: function() {
+            $('select[name=\'zone_id\']').prop('disabled', true);
+        },
+        complete: function() {
+            $('select[name=\'zone_id\']').prop('disabled', false);
+        },
+        success: function(json) {
+            html = '<option value="">{{ text_select }}</option>';
+
+            if (json['city'] && json['city'] != '') {
+                for (i = 0; i < json['city'].length; i++) {
+                    html += '<option value="' + json['city'][i]['name'] + '"';
+
+                    if (json['city'][i]['name'] == '{{ city }}') {
+                        html += ' selected="selected"';
+                    }
+
+                    html += '>' + json['city'][i]['name'] + '</option>';
+                }
+            } else {
+                html += '<option value="0" selected="selected">{{ text_none }}</option>';
+            }
+
+            $('select[name=\'city\']').html(html);
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+});
+
+$('select[name=\'zone_id\']').trigger('change');
+//--></script>
+			]]></add>
+		</operation>
+	</file>
+</modification>

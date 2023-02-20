@@ -34,4 +34,3 @@ class ModelLocalisationCity extends Model {
 		return $city_data;
 	}
 }
-?>
