@@ -38,7 +38,7 @@ class ControllerLocalisationCity extends Controller {
 				$url .= '&page=' . $this->request->get['page'];
 			}
 
-			$this->response->redirect($this->url->link('localisation/city', 'token=' . $this->session->data['token'] . $url, true));
+			$this->response->redirect($this->url->link('localisation/city', 'user_token=' . $this->session->data['user_token'] . $url, true));
 		}
 
 		$this->getForm();
@@ -70,7 +70,7 @@ class ControllerLocalisationCity extends Controller {
 				$url .= '&page=' . $this->request->get['page'];
 			}
 
-			$this->response->redirect($this->url->link('localisation/city', 'token=' . $this->session->data['token'] . $url, true));
+			$this->response->redirect($this->url->link('localisation/city', 'user_token=' . $this->session->data['user_token'] . $url, true));
 		}
 
 		$this->getForm();
@@ -104,13 +104,14 @@ class ControllerLocalisationCity extends Controller {
 				$url .= '&page=' . $this->request->get['page'];
 			}
 
-			$this->response->redirect($this->url->link('localisation/city', 'token=' . $this->session->data['token'] . $url, true));
+			$this->response->redirect($this->url->link('localisation/city', 'user_token=' . $this->session->data['user_token'] . $url, true));
 		}
 
 		$this->getList();
 	}
 
 	protected function getList() {
+
 		// Check database
 		$this->model_localisation_city->checkDatabase();
 
@@ -127,7 +128,7 @@ class ControllerLocalisationCity extends Controller {
 		}
 
 		if (isset($this->request->get['page'])) {
-			$page = $this->request->get['page'];
+			$page = (int)$this->request->get['page'];
 		} else {
 			$page = 1;
 		}
@@ -150,24 +151,24 @@ class ControllerLocalisationCity extends Controller {
 
 		$data['breadcrumbs'][] = array(
 			'text' => $this->language->get('text_home'),
-			'href' => $this->url->link('common/dashboard', 'token=' . $this->session->data['token'], true),
+			'href' => $this->url->link('common/dashboard', 'user_token=' . $this->session->data['user_token'], true),
 		);
 
 		$data['breadcrumbs'][] = array(
 			'text' => $this->language->get('heading_title'),
-			'href' => $this->url->link('localisation/city', 'token=' . $this->session->data['token'] . $url, true),
+			'href' => $this->url->link('localisation/city', 'user_token=' . $this->session->data['user_token'] . $url, true),
 		);
 
-		$data['add'] = $this->url->link('localisation/city/add', 'token=' . $this->session->data['token'] . $url, true);
-		$data['delete'] = $this->url->link('localisation/city/delete', 'token=' . $this->session->data['token'] . $url, true);
+		$data['add'] = $this->url->link('localisation/city/add', 'user_token=' . $this->session->data['user_token'] . $url, true);
+		$data['delete'] = $this->url->link('localisation/city/delete', 'user_token=' . $this->session->data['user_token'] . $url, true);
 
 		$data['cities'] = array();
 
 		$filter_data = array(
 			'sort'	=> $sort,
 			'order'	=> $order,
-			'start'	=> ($page - 1) * $this->config->get('config_admin_limit'),
-			'limit'	=> $this->config->get('config_admin_limit')
+			'start'	=> ($page - 1) * $this->config->get('config_limit_admin'),
+			'limit'	=> $this->config->get('config_limit_admin')
 		);
 
 		$city_total = $this->model_localisation_city->getTotalCities();
@@ -180,24 +181,11 @@ class ControllerLocalisationCity extends Controller {
 				'name'    => $result['name'],
 				'zone'	  => $result['zone'],
 				'status'  => ($result['status'] ? $this->language->get('text_enabled') : $this->language->get('text_disabled')),
-				'edit'    => $this->url->link('localisation/city/edit', 'token=' . $this->session->data['token'] . '&city_id=' . $result['city_id'] . $url, true)
+				'edit'    => $this->url->link('localisation/city/edit', 'user_token=' . $this->session->data['user_token'] . '&city_id=' . $result['city_id'] . $url, true)
 			);
 		}
 
 		$data['heading_title'] = $this->language->get('heading_title');
-
-		$data['text_list'] = $this->language->get('text_list');
-		$data['text_no_results'] = $this->language->get('text_no_results');
-		$data['text_confirm'] = $this->language->get('text_confirm');;
-
-		$data['column_name'] = $this->language->get('column_name');
-		$data['column_zone'] = $this->language->get('column_zone');
-		$data['column_status'] = $this->language->get('column_status');
-		$data['column_action'] = $this->language->get('column_action');
-
-		$data['button_add'] = $this->language->get('button_add');
-		$data['button_edit'] = $this->language->get('button_edit');
-		$data['button_delete'] = $this->language->get('button_delete');
 
 		if (isset($this->error['warning'])) {
 			$data['error_warning'] = $this->error['warning'];
@@ -231,8 +219,8 @@ class ControllerLocalisationCity extends Controller {
 			$url .= '&page=' . $this->request->get['page'];
 		}
 
-		$data['sort_name'] = $this->url->link('localisation/city', 'token=' . $this->session->data['token'] . '&sort=name' . $url, true);
-		$data['sort_zone'] = $this->url->link('localisation/city', 'token=' . $this->session->data['token'] . '&sort=zone' . $url, true);
+		$data['sort_name'] = $this->url->link('localisation/city', 'user_token=' . $this->session->data['user_token'] . '&sort=name' . $url, true);
+		$data['sort_zone'] = $this->url->link('localisation/city', 'user_token=' . $this->session->data['user_token'] . '&sort=zone' . $url, true);
 
 		$url = '';
 
@@ -247,8 +235,8 @@ class ControllerLocalisationCity extends Controller {
 		$pagination = new Pagination();
 		$pagination->total = $city_total;
 		$pagination->page = $page;
-		$pagination->limit = $this->config->get('config_admin_limit');
-		$pagination->url = $this->url->link('localisation/city', 'token=' . $this->session->data['token'] . $url . '&page={page}', true);
+		$pagination->limit = $this->config->get('config_limit_admin');
+		$pagination->url = $this->url->link('localisation/city', 'user_token=' . $this->session->data['user_token'] . $url . '&page={page}', true);
 
 		$data['pagination'] = $pagination->render();
 
@@ -268,19 +256,6 @@ class ControllerLocalisationCity extends Controller {
 		$data['heading_title'] = $this->language->get('heading_title');
 
 		$data['text_form'] = !isset($this->request->get['city_id']) ? $this->language->get('text_add') : $this->language->get('text_edit');
-
-		$data['text_enabled'] = $this->language->get('text_enabled');
-		$data['text_disabled'] = $this->language->get('text_disabled');
-		$data['text_none'] = $this->language->get('text_none');
-		$data['text_select'] = $this->language->get('text_select');
-
-		$data['entry_name'] = $this->language->get('entry_name');
-		$data['entry_country'] = $this->language->get('entry_country');
-		$data['entry_zone'] = $this->language->get('entry_zone');
-		$data['entry_status'] = $this->language->get('entry_status');
-
-		$data['button_save'] = $this->language->get('button_save');
-		$data['button_cancel'] = $this->language->get('button_cancel');
 
 		if (isset($this->error['warning'])) {
 			$data['error_warning'] = $this->error['warning'];
@@ -312,21 +287,21 @@ class ControllerLocalisationCity extends Controller {
 
 		$data['breadcrumbs'][] = array(
 			'text'		=> $this->language->get('text_home'),
-			'href'		=> $this->url->link('common/dashboard', 'token=' . $this->session->data['token'], true),
+			'href'		=> $this->url->link('common/dashboard', 'user_token=' . $this->session->data['user_token'], true),
 		);
 
 		$data['breadcrumbs'][] = array(
 			'text'		=> $this->language->get('heading_title'),
-			'href'		=> $this->url->link('localisation/city', 'token=' . $this->session->data['token'] . $url, true),
+			'href'		=> $this->url->link('localisation/city', 'user_token=' . $this->session->data['user_token'] . $url, true),
 		);
 
 		if (!isset($this->request->get['city_id'])) {
-			$data['action'] = $this->url->link('localisation/city/add', 'token=' . $this->session->data['token'] . $url, true);
+			$data['action'] = $this->url->link('localisation/city/add', 'user_token=' . $this->session->data['user_token'] . $url, true);
 		} else {
-			$data['action'] = $this->url->link('localisation/city/edit', 'token=' . $this->session->data['token'] . '&city_id=' . $this->request->get['city_id'] . $url, true);
+			$data['action'] = $this->url->link('localisation/city/edit', 'user_token=' . $this->session->data['user_token'] . '&city_id=' . $this->request->get['city_id'] . $url, true);
 		}
 
-		$data['cancel'] = $this->url->link('localisation/city', 'token=' . $this->session->data['token'] . $url, true);
+		$data['cancel'] = $this->url->link('localisation/city', 'user_token=' . $this->session->data['user_token'] . $url, true);
 
 		if (isset($this->request->get['city_id']) && ($this->request->server['REQUEST_METHOD'] != 'POST')) {
 			$city_info = $this->model_localisation_city->getCity($this->request->get['city_id']);
@@ -374,7 +349,7 @@ class ControllerLocalisationCity extends Controller {
 			$data['status'] = '1';
 		}
 
-		$data['token'] = $this->session->data['token'];
+		$data['user_token'] = $this->session->data['user_token'];
 
 		$data['header'] = $this->load->controller('common/header');
 		$data['column_left'] = $this->load->controller('common/column_left');
