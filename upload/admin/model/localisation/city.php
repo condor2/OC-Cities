@@ -1,13 +1,13 @@
 <?php
 class ModelLocalisationCity extends Model {
 	public function addCity($data) {
-		$this->db->query("INSERT INTO  `" . DB_PREFIX . "city` SET `name` = '" . $this->db->escape($data['name']) . "', `postcode` = '" . $this->db->escape($data['postcode']) . "', `zone_id` = '" . (int)$data['zone_id'] . "', `status` = '" . (int)$data['status'] . "'");
+		$this->db->query("INSERT INTO  `" . DB_PREFIX . "city` SET `name` = '" . $this->db->escape($data['name']) . "', `postcode` = '" . $this->db->escape($data['postcode']) . "', `country_id` = '" . (int)$data['country_id'] . "', `zone_id` = '" . (int)$data['zone_id'] . "', `status` = '" . (int)$data['status'] . "'");
 
 		$this->cache->delete('city');
 	}
 
 	public function editCity($city_id, $data) {
-		$this->db->query("UPDATE `" . DB_PREFIX . "city` SET `name` = '" . $this->db->escape($data['name']) . "', `postcode` = '" . $this->db->escape($data['postcode']) . "', `zone_id` = '" . (int)$data['zone_id'] . "', status = '" . (int)$data['status'] . "' WHERE city_id = '" . (int)$city_id . "'");
+		$this->db->query("UPDATE `" . DB_PREFIX . "city` SET `name` = '" . $this->db->escape($data['name']) . "', `postcode` = '" . $this->db->escape($data['postcode']) . "', `country_id` = '" . (int)$data['country_id'] . "', `zone_id` = '" . (int)$data['zone_id'] . "', status = '" . (int)$data['status'] . "' WHERE city_id = '" . (int)$city_id . "'");
 
 		$this->cache->delete('city');
 	}
@@ -105,7 +105,9 @@ class ModelLocalisationCity extends Model {
 		if (!$query->num_rows) {
 			$this->db->query("CREATE TABLE `" . DB_PREFIX . "city` (
 				`city_id` int(11) NOT NULL AUTO_INCREMENT,
-				`zone_id` int(11) NOT NULL, `name` varchar(128) NOT NULL,
+				`country_id` int(11) NOT NULL,
+				`zone_id` int(11) NOT NULL,
+				`name` varchar(128) NOT NULL,
 				`postcode` varchar(10) NOT NULL,
 				`status` tinyint(1) NOT NULL DEFAULT '1',
 				`sort_order` int(3) NOT NULL DEFAULT '0',
