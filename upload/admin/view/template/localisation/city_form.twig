@@ -46,7 +46,7 @@
               <select name="country_id" id="input-country" onchange="country(this, '{{ zone_id }}');" class="form-control">
                 <option value="">{{ text_select }}</option>
                 {% for country in countries %}
-                {% if country.country_id == address.country_id %}
+                {% if country.country_id == country_id %}
                 <option value="{{ country.country_id }}" selected="selected">{{ country.name }}</option>
                 {% else %}
                 <option value="{{ country.country_id }}">{{ country.name }}</option>
