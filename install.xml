@@ -137,4 +137,296 @@ $('select[name=\'zone_id\']').trigger('change');
 			]]></add>
 		</operation>
 	</file>
+	<file path="catalog/controller/checkout/guest.php">
+		<operation>
+			<search><![CDATA[if (isset($this->session->data['payment_address']['city'])) {]]></search>
+			<add position="before"><![CDATA[
+		$this->load->model('localisation/city');
+
+		$data['cities'] = $this->model_localisation_city->getCities();
+			]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/controller/checkout/guest_shipping.php">
+		<operation>
+			<search><![CDATA[if (isset($this->session->data['shipping_address']['city'])) {]]></search>
+			<add position="before"><![CDATA[
+		$this->load->model('localisation/city');
+
+		$data['cities'] = $this->model_localisation_city->getCities();
+			]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/controller/checkout/{payment_address,register,shipping_address}*.php">
+		<operation>
+			<search index="0"><![CDATA[$this->load->model('localisation/country');]]></search>
+			<add position="before"><![CDATA[
+		$this->load->model('localisation/city');
+
+		$data['cities'] = $this->model_localisation_city->getCities();
+			]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/controller/checkout/payment_address.php">
+		<operation>
+			<search><![CDATA[$this->load->model('localisation/city');]]></search>
+			<add position="before"><![CDATA[
+		if (isset($this->session->data['payment_address']['city'])) {
+			$data['city'] = $this->session->data['payment_address']['city'];
+		} else {
+			$data['city'] = '';
+		}
+			]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/controller/checkout/{register,shipping_address}*.php">
+		<operation>
+			<search><![CDATA[$this->load->model('localisation/city');]]></search>
+			<add position="before"><![CDATA[
+		if (isset($this->session->data['shipping_address']['city'])) {
+			$data['city'] = $this->session->data['shipping_address']['city'];
+		} else {
+			$data['city'] = '';
+		}
+			]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/controller/checkout/checkout.php">
+		<operation>
+			<search><![CDATA[public function customfield() {]]></search>
+			<add position="before"><![CDATA[
+	public function zone() {
+		$json = array();
+		$this->load->model('localisation/zone');
+		$zone_info = $this->model_localisation_zone->getZone($this->request->get['zone_id']);
+		if ($zone_info) {
+			$this->load->model('localisation/city');
+			$json = array(
+				'zone_id'   => $zone_info['zone_id'],
+				'name'      => $zone_info['name'],
+				'city'      => $this->model_localisation_city->getCitiesByZoneId($this->request->get['zone_id']),
+				'status'    => $zone_info['status']
+			);
+		}
+		$this->response->addHeader('Content-Type: application/json');
+		$this->response->setOutput(json_encode($json));
+	}
+			]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/view/theme/default/template/checkout/guest.twig">
+		<operation>
+			<search><![CDATA[<input type="text" name="address_2" value="{{ address_2 }}" placeholder="{{ entry_address_2 }}" id="input-payment-address-2" class="form-control" />]]></search>
+			<add position="replace" offset="5"><![CDATA[
+        <input type="text" name="address_2" value="{{ address_2 }}" placeholder="{{ entry_address_2 }}" id="input-payment-address-2" class="form-control" />
+      </div>
+			]]></add>
+		</operation>
+		<operation>
+			<search index="1"><![CDATA[{% for custom_field in custom_fields %}]]></search>
+			<add position="before"><![CDATA[
+      <div class="form-group required">
+        <label class="control-label" for="input-payment-city">{{ entry_city }}</label>
+        <select name="city" id="input-payment-city" class="form-control">
+        </select>
+      </div>
+			]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/view/theme/default/template/checkout/{guest,payment_address,register}*.twig">
+		<operation>
+			<search><![CDATA[$('#collapse-payment-address select[name=\'zone_id\']').html(html);]]></search>
+			<add position="after"><![CDATA[
+			$('#collapse-payment-address select[name=\'zone_id\']').trigger('change');
+			]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$('#collapse-payment-address select[name=\'country_id\']').trigger('change');]]></search>
+			<add position="after" offset="1"><![CDATA[
+<script type="text/javascript"><!--
+$('#collapse-payment-address select[name=\'zone_id\']').on('change', function() {
+    $.ajax({
+        url: 'index.php?route=checkout/checkout/zone&zone_id=' + this.value,
+        dataType: 'json',
+        beforeSend: function() {
+            $('#collapse-payment-address select[name=\'zone_id\']').prop('disabled', true);
+        },
+        complete: function() {
+            $('#collapse-payment-address select[name=\'zone_id\']').prop('disabled', false);
+        },
+        success: function(json) {
+            html = '<option value="">{{ text_select }}</option>';
+            if (json['city'] && json['city'] != '') {
+                for (i = 0; i < json['city'].length; i++) {
+                    html += '<option value="' + json['city'][i]['name'] + '"';
+                    if (json['city'][i]['name'] == '{{ city }}') {
+                        html += ' selected="selected"';
+                    }
+                    html += '>' + json['city'][i]['name'] + '</option>';
+                }
+            } else {
+                html += '<option value="0" selected="selected">{{ text_none }}</option>';
+            }
+            $('#collapse-payment-address select[name=\'city\']').html(html);
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+});
+$('#collapse-payment-address select[name=\'zone_id\']').trigger('change');
+//--></script>
+			]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/view/theme/default/template/checkout/guest_shipping.twig">
+		<operation>
+			<search><![CDATA[<input type="text" name="address_2" value="{{ address_2 }}" placeholder="{{ entry_address_2 }}" id="input-shipping-address-2" class="form-control" />]]></search>
+			<add position="replace" offset="8"><![CDATA[
+      <input type="text" name="address_2" value="{{ address_2 }}" placeholder="{{ entry_address_2 }}" id="input-shipping-address-2" class="form-control" />
+    </div>
+  </div>
+			]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[{% for custom_field in custom_fields %}]]></search>
+			<add position="before"><![CDATA[
+  <div class="form-group required">
+    <label class="col-sm-2 control-label" for="input-shipping-city">{{ entry_city }}</label>
+    <div class="col-sm-10">
+      <select name="city" id="input-shipping-city" class="form-control">
+      </select>
+    </div>
+  </div>
+			]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/view/theme/default/template/checkout/{guest_shipping,shipping_address}*.twig">
+		<operation>
+			<search><![CDATA[$('#collapse-shipping-address select[name=\'zone_id\']').html(html);]]></search>
+			<add position="after"><![CDATA[
+			$('#collapse-shipping-address select[name=\'zone_id\']').trigger('change');
+			]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$('#collapse-shipping-address select[name=\'country_id\']').trigger('change');]]></search>
+			<add position="after" offset="1"><![CDATA[
+<script type="text/javascript"><!--
+$('#collapse-shipping-address select[name=\'zone_id\']').on('change', function() {
+    $.ajax({
+        url: 'index.php?route=checkout/checkout/zone&zone_id=' + this.value,
+        dataType: 'json',
+        beforeSend: function() {
+            $('#collapse-shipping-address select[name=\'zone_id\']').prop('disabled', true);
+        },
+        complete: function() {
+            $('#collapse-shipping-address select[name=\'zone_id\']').prop('disabled', false);
+        },
+        success: function(json) {
+            html = '<option value="">{{ text_select }}</option>';
+            if (json['city'] && json['city'] != '') {
+                for (i = 0; i < json['city'].length; i++) {
+                    html += '<option value="' + json['city'][i]['name'] + '"';
+                    if (json['city'][i]['name'] == '{{ city }}') {
+                        html += ' selected="selected"';
+                    }
+                    html += '>' + json['city'][i]['name'] + '</option>';
+                }
+            } else {
+                html += '<option value="0" selected="selected">{{ text_none }}</option>';
+            }
+            $('#collapse-shipping-address select[name=\'city\']').html(html);
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+});
+$('#collapse-shipping-address select[name=\'zone_id\']').trigger('change');
+//--></script>
+			]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/view/theme/default/template/checkout/payment_address.twig">
+		<operation>
+			<search><![CDATA[<input type="text" name="address_2" value="" placeholder="{{ entry_address_2 }}" id="input-payment-address-2" class="form-control" />]]></search>
+			<add position="replace" offset="8"><![CDATA[
+        <input type="text" name="address_2" value="" placeholder="{{ entry_address_2 }}" id="input-payment-address-2" class="form-control" />
+      </div>
+    </div>
+			]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[{% for custom_field in custom_fields %}]]></search>
+			<add position="before"><![CDATA[
+    <div class="form-group required">
+      <label class="col-sm-2 control-label" for="input-payment-city">{{ entry_city }}</label>
+      <div class="col-sm-10">
+        <select name="city" id="input-payment-city" class="form-control">
+        </select>
+      </div>
+    </div>
+			]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/view/theme/default/template/checkout/shipping_address.twig">
+		<operation>
+			<search><![CDATA[<input type="text" name="address_2" value="" placeholder="{{ entry_address_2 }}" id="input-shipping-address-2" class="form-control" />]]></search>
+			<add position="replace" offset="8"><![CDATA[
+        <input type="text" name="address_2" value="" placeholder="{{ entry_address_2 }}" id="input-shipping-address-2" class="form-control" />
+      </div>
+    </div>
+			]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[{% for custom_field in custom_fields %}]]></search>
+			<add position="before"><![CDATA[
+    <div class="form-group required">
+      <label class="col-sm-2 control-label" for="input-shipping-city">{{ entry_city }}</label>
+      <div class="col-sm-10">
+        <select name="city" id="input-shipping-city" class="form-control">
+        </select>
+      </div>
+    </div>
+			]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/view/theme/default/template/checkout/register.twig">
+		<operation>
+			<search><![CDATA[<input type="text" name="address_2" value="" placeholder="{{ entry_address_2 }}" id="input-payment-address-2" class="form-control" />]]></search>
+			<add position="replace" offset="5"><![CDATA[
+        <input type="text" name="address_2" value="" placeholder="{{ entry_address_2 }}" id="input-payment-address-2" class="form-control" />
+      </div>
+			]]></add>
+		</operation>
+		<operation>
+			<search index="1"><![CDATA[{% for custom_field in custom_fields %}]]></search>
+			<add position="before"><![CDATA[
+      <div class="form-group required">
+        <label class="control-label" for="input-payment-city">{{ entry_city }}</label>
+        <select name="city" id="input-payment-city" class="form-control">
+        </select>
+      </div>
+			]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/language/en-gb/account/address.php">
+		<operation>
+			<search><![CDATA[City must be between 2 and 128 characters!]]></search>
+			<add position="replace"><![CDATA[Please select a city!]]></add>
+		</operation>
+	</file>
 </modification>
