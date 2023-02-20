@@ -177,11 +177,12 @@ class ControllerLocalisationCity extends Controller {
 
 		foreach ($results as $result) {
 			$data['cities'][] = array(
-				'city_id' => $result['city_id'],
-				'name'    => $result['name'],
-				'zone'	  => $result['zone'],
-				'status'  => ($result['status'] ? $this->language->get('text_enabled') : $this->language->get('text_disabled')),
-				'edit'    => $this->url->link('localisation/city/edit', 'user_token=' . $this->session->data['user_token'] . '&city_id=' . $result['city_id'] . $url, true)
+				'city_id'  => $result['city_id'],
+				'zone'	   => $result['zone'],
+				'name'     => $result['name'],
+				'postcode' => $result['postcode'],
+				'status'   => ($result['status'] ? $this->language->get('text_enabled') : $this->language->get('text_disabled')),
+				'edit'     => $this->url->link('localisation/city/edit', 'user_token=' . $this->session->data['user_token'] . '&city_id=' . $result['city_id'] . $url, true)
 			);
 		}
 
@@ -219,8 +220,9 @@ class ControllerLocalisationCity extends Controller {
 			$url .= '&page=' . $this->request->get['page'];
 		}
 
-		$data['sort_name'] = $this->url->link('localisation/city', 'user_token=' . $this->session->data['user_token'] . '&sort=name' . $url, true);
 		$data['sort_zone'] = $this->url->link('localisation/city', 'user_token=' . $this->session->data['user_token'] . '&sort=zone' . $url, true);
+		$data['sort_name'] = $this->url->link('localisation/city', 'user_token=' . $this->session->data['user_token'] . '&sort=name' . $url, true);
+		$data['sort_postcode'] = $this->url->link('localisation/city', 'user_token=' . $this->session->data['user_token'] . '&sort=postcode' . $url, true);
 
 		$url = '';
 
@@ -313,6 +315,14 @@ class ControllerLocalisationCity extends Controller {
 			$data['name'] = $city_info['name'];
 		} else {
 			$data['name'] = '';
+		}
+
+		if (isset($this->request->post['postcode'])) {
+			$data['postcode'] = $this->request->post['postcode'];
+		} elseif (!empty($city_info)) {
+			$data['postcode'] = $city_info['postcode'];
+		} else {
+			$data['postcode'] = '';
 		}
 
 		$this->load->model('localisation/zone');

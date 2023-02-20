@@ -10,12 +10,14 @@ $_['text_edit']         = 'Edit City';
 
 // Column
 $_['column_name']		= 'City Name';
+$_['column_postcode']	= 'Postcode';
 $_['column_zone']		= 'Zone';
 $_['column_status']		= 'Status';
 $_['column_action']		= 'Action';
 
 // Entry
 $_['entry_name']		= 'City Name:';
+$_['entry_postcode']	= 'Postcode:';
 $_['entry_country']		= 'Country:';
 $_['entry_zone']		= 'Zone:';
 $_['entry_status']		= 'Status:';
