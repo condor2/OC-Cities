@@ -6,7 +6,7 @@ Opencart extension to change the "city" input column to a drop-down list.
 Requirements
 ------------
 
-* Opencart v3.0.3.8
+* Opencart v3.0.3.8 & Default theme
 
 Installation
 ------------
